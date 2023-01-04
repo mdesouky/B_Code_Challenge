@@ -10,10 +10,11 @@ A python CDK App to provision an EC2 instance with Apache installed on it
 4. AWS CDK
 
 ## Notes
-1. I have not spent time writing code to deploy a dedicated VPC since a [best practices VPC](https://docs.aws.amazon.com/quickstart/latest/vpc/architecture.html) done by AWS is readily available and can be easily deployed into any account
-2. By design server can only be accessed using Session manager, hence no ssh key has been configured on the instance.
-3. Since not much detail was given, I've configured a really simple html page to replace the default page of Apache, otherwise there should be a virtual host configured
-4. Since the Instance is in a private subnet with no LB configured then it can be only tested from within the instance itself as illustrated below
+1. I've Went with CDK although the choices were Terraform or Cloudformation since CDK practically deploys a cloudformation stack and a template can be easily sythesized from the code
+2. I have not spent time writing code to deploy a dedicated VPC since a [best practices VPC](https://docs.aws.amazon.com/quickstart/latest/vpc/architecture.html) done by AWS is readily available and can be easily deployed into any account
+3. By design server can only be accessed using Session manager, hence no ssh key has been configured on the instance.
+4. Since not much detail was given, I've configured a really simple html page to replace the default page of Apache, otherwise there should be a virtual host configured
+5. Since the Instance is in a private subnet with no LB configured then it can be only tested from within the instance itself as illustrated below
 
 ```bash
 [root@ip-10-10-22-169 ~]# curl 127.0.0.1
