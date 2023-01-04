@@ -1,3 +1,65 @@
+# B_Code_Challenge
+A python CDK App to provision an EC2 instance with Apache installed on it
+
+## Running Locally
+---
+### Prerequisites
+1. Python3
+2. AWS CLI
+3. NodeJs
+4. AWS CDK
+
+## Notes
+1. I have not spent time writing code to deploy a dedicated VPC since a [best practices VPC](https://docs.aws.amazon.com/quickstart/latest/vpc/architecture.html) done by AWS is readily available and can be easily deployed into any account
+2. By design server can only be accessed using Session manager, hence no ssh key has been configured on the instance.
+3. Since not much detail was given, I've configured a really simple html page to replace the default page of Apache, otherwise there should be a virtual host configured
+4. Since the Instance is in a private subnet with no LB configured then it can be only tested from within the instance itself as illustrated below
+
+```bash
+[root@ip-10-10-22-169 ~]# curl 127.0.0.1
+<!DOCTYPE html>
+<html>
+    <head>
+        Welcome to B!
+    </head>
+    <body>
+        Hello World!
+    </body>
+</html>
+```
+## Potential Improvements
+1. Enable Encryption on the EBS volume for the instance
+2. Enable Encryption on s3 Bucket
+3. Parametrize Log group name and other variables in the cloudwatch agent json config file
+4. Build a Golden AMI with packer, version it and just lookup the AMI-ID with CDK and deploy it
+5. Configure an Autoscaling Group with a LB in front
+
+
+### Running CDK Commands
+To run CDK commands you can follow the default CDK guide at the end of this section or simply run `Make` commands which have been programmed in the [Makefile](./Makefile) to create a python virtual environment, install requirements and then run the CDK command for you such as:
+`make synth`
+`make test`
+`make deploy` 
+
+You can run `make help` to get more info on the different commands
+```bash
+> make help     
+
+Usage:
+  make <target>
+
+Targets:
+  test                 Run Unit tests on CDK code
+  synth                Synthesize Cloudformation Stacks from CDK Code for the target account/environment
+  diff                 Show CDK diff on the target account/environment
+  context              Fetch CDK context from the target account
+  deploy               Deploy All CDK Stacks into the target account
+  destroy              Destroy All CDK Stacks in the target account
+  bootstrap            Install Bootstrap CDK into the target account
+  install-pre-commit   Install Pre-Commit Hooks
+Help
+  help                 Show help
+```
 
 # Welcome to your CDK Python project!
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os
+import os, sys
 from aws_cdk import App, Environment
 import aws_cdk as cdk
 import yaml
@@ -24,6 +24,9 @@ def build_config(env: str):
             build_config = yaml.safe_load(yaml_config)
         except yaml.YAMLError as exc:
             print(exc)
+        except: #handle other exceptions
+            print ("Unexpected error:", sys.exc_info()[0])
+        build_config['environment']=env
     return build_config
 
 
