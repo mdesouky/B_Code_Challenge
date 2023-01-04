@@ -1,0 +1,831 @@
+{
+  "Description": "B Apache Infrastructure CDK Stack",
+  "Resources": {
+    "ApacheLogGroupB6244F1E": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/b/apache",
+        "RetentionInDays": 365,
+        "Tags": [
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/ApacheLogGroup/Resource"
+      }
+    },
+    "apacheContentBucketF1330746": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "b-apache-content-bucket-763874889918-us-east-1-dev",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true"
+          },
+          {
+            "Key": "aws-cdk:cr-owned:166053f8",
+            "Value": "true"
+          },
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          }
+        ],
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheContentBucket/Resource"
+      }
+    },
+    "apacheContentBucketPolicy5AAD62E6": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "apacheContentBucketF1330746"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:DeleteObject*",
+                "s3:GetBucket*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn"
+                  ]
+                }
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "apacheContentBucketF1330746",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "apacheContentBucketF1330746",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheContentBucket/Policy/Resource"
+      }
+    },
+    "apacheContentBucketAutoDeleteObjectsCustomResource09747916": {
+      "Type": "Custom::S3AutoDeleteObjects",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn"
+          ]
+        },
+        "BucketName": {
+          "Ref": "apacheContentBucketF1330746"
+        }
+      },
+      "DependsOn": [
+        "apacheContentBucketPolicy5AAD62E6"
+      ],
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheContentBucket/AutoDeleteObjectsCustomResource/Default"
+      }
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+      }
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-763874889918-us-east-1",
+          "S3Key": "3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7.zip"
+        },
+        "Timeout": 900,
+        "MemorySize": 128,
+        "Handler": "__entrypoint__.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs14.x",
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Lambda function for auto-deleting objects in ",
+              {
+                "Ref": "apacheContentBucketF1330746"
+              },
+              " S3 bucket."
+            ]
+          ]
+        }
+      },
+      "DependsOn": [
+        "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+        "aws:asset:path": "asset.3f51abb709b8e65167a45aeed02bab11540603d909005d7148230ba5ce6c74d7",
+        "aws:asset:property": "Code"
+      }
+    },
+    "apacheInstanceRole9BC98401": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
+          "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        ],
+        "RoleName": "apache-Instance-Role",
+        "Tags": [
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheInstanceRole/Resource"
+      }
+    },
+    "apacheCloudwatchConfig7918E2C1": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Type": "String",
+        "Value": "{\n    \"agent\": {\n        \"metrics_collection_interval\": 10,\n        \"logfile\": \"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log\"\n    },\n    \"logs\": {\n        \"logs_collected\": {\n            \"files\": {\n                \"collect_list\": [\n                    {\n                        \"file_path\": \"/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/cloudwatch-agent\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/user-data.log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/user-data\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/cloud-init.log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/cloud-init\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/messages\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/messages\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/nginx\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/nginx\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/boot.log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/boot\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/yum.log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/yum\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/secure\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/secure\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/httpd/error_log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/httpd/error_log\",\n                        \"timezone\": \"LOCAL\"\n                    },\n                    {\n                        \"file_path\": \"/var/log/httpd/access_log\",\n                        \"log_group_name\": \"/b/apache\",\n                        \"log_stream_name\": \"{instance_id}/httpd/access_log\",\n                        \"timezone\": \"LOCAL\"\n                    }\n                ]\n            }\n        },\n        \"log_stream_name\": \"{instance_id}\",\n        \"force_flush_interval\" : 15\n    }\n}",
+        "Name": "/b/apache/dev/cloudwatch_config",
+        "Tags": {
+          "B:architecture:ServiceId": "Infrastructure",
+          "B:automation:Deployment": "Automated",
+          "B:automation:EnvironmentId": "dev",
+          "B:cost-allocation:ApplicationId": "Apache",
+          "B:cost-allocation:AwsAccount": "Sandbox",
+          "B:data:classification": "private",
+          "B:operations:Owner": "Devops"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheCloudwatchConfig/Resource"
+      }
+    },
+    "ReadConfigPolicy0E2E466D": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:Get*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "apacheContentBucketF1330746",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "apacheContentBucketF1330746",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
+                "s3:Describe*",
+                "s3:Get*"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:us-east-1:763874889918:parameter",
+                    {
+                      "Ref": "apacheCloudwatchConfig7918E2C1"
+                    }
+                  ]
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "ReadConfigPolicy0E2E466D",
+        "Roles": [
+          {
+            "Ref": "apacheInstanceRole9BC98401"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/ReadConfigPolicy/Resource"
+      }
+    },
+    "apacheSecurityGroup7ED5C991": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Apache-infra-cdk-stack-763874889918-dev/apacheSecurityGroup",
+        "GroupName": "apache-Security-Group",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow HTTP From World",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          }
+        ],
+        "VpcId": "vpc-05b60c461fb374baf"
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheSecurityGroup/Resource"
+      }
+    },
+    "DeployWebsiteAwsCliLayer17DBC421": {
+      "Type": "AWS::Lambda::LayerVersion",
+      "Properties": {
+        "Content": {
+          "S3Bucket": "cdk-hnb659fds-assets-763874889918-us-east-1",
+          "S3Key": "5d8d1d0aacea23824c62f362e1e3c14b7dd14a31c71b53bfae4d14a6373c5510.zip"
+        },
+        "Description": "/opt/awscli/aws"
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/DeployWebsite/AwsCliLayer/Resource",
+        "aws:asset:path": "asset.5d8d1d0aacea23824c62f362e1e3c14b7dd14a31c71b53bfae4d14a6373c5510.zip",
+        "aws:asset:is-bundled": false,
+        "aws:asset:property": "Content"
+      }
+    },
+    "DeployWebsiteCustomResourceD116527B": {
+      "Type": "Custom::CDKBucketDeployment",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536",
+            "Arn"
+          ]
+        },
+        "SourceBucketNames": [
+          "cdk-hnb659fds-assets-763874889918-us-east-1"
+        ],
+        "SourceObjectKeys": [
+          "7738f1e7ed8b286ce15105ceb3e51c3560797d009a1fe1d9568a6b908e4d4e33.zip"
+        ],
+        "DestinationBucketName": {
+          "Ref": "apacheContentBucketF1330746"
+        },
+        "Extract": true,
+        "Prune": true
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete",
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/DeployWebsite/CustomResource/Default"
+      }
+    },
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/Resource"
+      }
+    },
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetBucket*",
+                "s3:GetObject*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::cdk-hnb659fds-assets-763874889918-us-east-1",
+                "arn:aws:s3:::cdk-hnb659fds-assets-763874889918-us-east-1/*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:Abort*",
+                "s3:DeleteObject*",
+                "s3:GetBucket*",
+                "s3:GetObject*",
+                "s3:List*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "apacheContentBucketF1330746",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "apacheContentBucketF1330746",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF",
+        "Roles": [
+          {
+            "Ref": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource"
+      }
+    },
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "cdk-hnb659fds-assets-763874889918-us-east-1",
+          "S3Key": "2bc265c5e0569aeb24a6349c15bd54e76e845892376515e036627ab0cc70bb64.zip"
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265",
+            "Arn"
+          ]
+        },
+        "Handler": "index.handler",
+        "Layers": [
+          {
+            "Ref": "DeployWebsiteAwsCliLayer17DBC421"
+          }
+        ],
+        "Runtime": "python3.9",
+        "Tags": [
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          }
+        ],
+        "Timeout": 900
+      },
+      "DependsOn": [
+        "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF",
+        "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource",
+        "aws:asset:path": "asset.2bc265c5e0569aeb24a6349c15bd54e76e845892376515e036627ab0cc70bb64",
+        "aws:asset:is-bundled": false,
+        "aws:asset:property": "Code"
+      }
+    },
+    "apacheInstanceInstanceProfile8A8D3470": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "apacheInstanceRole9BC98401"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheInstance/InstanceProfile"
+      }
+    },
+    "apacheInstanceC03AA4B57ee4f94aac571f5a": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "us-east-1a",
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeSize": "30",
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "true"
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "apacheInstanceInstanceProfile8A8D3470"
+        },
+        "ImageId": {
+          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+        },
+        "InstanceType": "t3.micro",
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "apacheSecurityGroup7ED5C991",
+              "GroupId"
+            ]
+          }
+        ],
+        "SubnetId": "subnet-0c9e9439ef17e8963",
+        "Tags": [
+          {
+            "Key": "B:architecture:ServiceId",
+            "Value": "Infrastructure"
+          },
+          {
+            "Key": "B:automation:Deployment",
+            "Value": "Automated"
+          },
+          {
+            "Key": "B:automation:EnvironmentId",
+            "Value": "dev"
+          },
+          {
+            "Key": "B:cost-allocation:ApplicationId",
+            "Value": "Apache"
+          },
+          {
+            "Key": "B:cost-allocation:AwsAccount",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "B:data:classification",
+            "Value": "private"
+          },
+          {
+            "Key": "B:operations:Owner",
+            "Value": "Devops"
+          },
+          {
+            "Key": "Name",
+            "Value": "Apache-Instance"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n\n## Set Timezone\ntimedatectl set-timezone Australia/Sydney\n\n## Install the Cloudwatch Agent\nyum install -y amazon-cloudwatch-agent\n\n## Configuring Cloudwatch agent\namazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:",
+                {
+                  "Ref": "apacheCloudwatchConfig7918E2C1"
+                },
+                " -s\n\n## Check Cloudwatch Agent Status'\namazon-cloudwatch-agent-ctl -a status\n\n\n## Install the Apache web server\nyum install -y httpd\n\n## Copy Down Html Page from s3\naws s3 cp s3://",
+                {
+                  "Ref": "apacheContentBucketF1330746"
+                },
+                "/belong-test.html /var/www/html/index.html\n## Start the Apache web server\nsystemctl start httpd\n\n## Configure the Apache web server to start at each system boot\nsystemctl enable httpd"
+              ]
+            ]
+          }
+        }
+      },
+      "DependsOn": [
+        "apacheInstanceRole9BC98401"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/apacheInstance/Resource"
+      }
+    },
+    "CDKMetadata": {
+      "Type": "AWS::CDK::Metadata",
+      "Properties": {
+        "Analytics": "v2:deflate64:H4sIAAAAAAAA/11RTW/CMAz9LdyDx0DTtCMwbZq0QwXSrlVITcnIB4qToSrqf1/S0nbs9J5f7PjZXsLTMyxm/EpzUZ3nSh4g7j0XZ5akMipbE8RPW787Gy5sezQDbxmtIG6COKPP+o31UFglRTPJt7gPNpywZZJriDurMGd1OBVN7MOQ50Zg4exRqlRGpLNBJ01dcMc1enRdyRC0DMUypaAITvpm9H0vDP/+7ZEnKmOFF2UbjcZDb/d1FBgnQk+wztAyxfWh4hDzUniD7gsdSWvYPnlT6K15C0b4rIwkpQ68bdk2kLd6h2SD661M/O4pTf8jqzRo1zmdp04t2JjcGylVNlGmswklYX2lrZKdr3/rKRp/suZhBY8LeJl9k5RzF4yXGmHX4y/JIQVnFAIAAA=="
+      },
+      "Metadata": {
+        "aws:cdk:path": "Apache-infra-cdk-stack-763874889918-dev/CDKMetadata/Default"
+      }
+    }
+  },
+  "Parameters": {
+    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+    },
+    "BootstrapVersion": {
+      "Type": "AWS::SSM::Parameter::Value<String>",
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+    }
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                  ],
+                  {
+                    "Ref": "BootstrapVersion"
+                  }
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+        }
+      ]
+    }
+  }
+}

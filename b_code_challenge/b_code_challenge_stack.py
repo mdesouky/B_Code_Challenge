@@ -49,7 +49,7 @@ class BCodeChallengeStack(Stack):
         app_loggroup=logs.LogGroup(
             scope=self,
             id=f"{props['app']}LogGroup",
-            log_group_name=f"{props['org'].lower()}/{props['app'].lower()}",
+            log_group_name=f"/{props['org'].lower()}/{props['app'].lower()}",
             removal_policy=RemovalPolicy.DESTROY,
             retention=logs.RetentionDays.ONE_YEAR
         )

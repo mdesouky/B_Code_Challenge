@@ -36,10 +36,110 @@ def test_app_loggroup_created(template):
         "AWS::Logs::LogGroup",
         {
             "Properties": {
-                "LogGroupName": f"{props['app'].lower()}",
+                "LogGroupName": f"/{props['org'].lower()}/{props['app'].lower()}",
                 "RetentionInDays": 365,
             },
             "UpdateReplacePolicy": "Delete",
             "DeletionPolicy": "Delete"
+        }
+    )
+
+def test_app_content_bucket_created(template):
+    template.has_resource(
+        "AWS::S3::Bucket",
+        {
+            "Properties": {
+                "BucketName": f"{props['org'].lower()}-{props['app'].lower()}-content-bucket-{props['account_id']}-{props['region']}-{props['environment']}",
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": True,
+                    "BlockPublicPolicy": True,
+                    "IgnorePublicAcls": True,
+                    "RestrictPublicBuckets": True
+                }
+            },
+            "UpdateReplacePolicy": "Delete",
+            "DeletionPolicy": "Delete"
+        }
+    )
+
+def test_app_instance_role_created(template):
+    template.has_resource(
+        "AWS::IAM::Role",
+        {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "ec2.amazonaws.com"
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
+                    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+                ],
+            "RoleName": f"{props['app'].lower()}-Instance-Role"
+            }
+        }
+    )
+
+def test_cw_config_ssm_parameter_created(template):
+    template.has_resource(
+        "AWS::SSM::Parameter",
+        {
+            "Properties": {
+                "Name": f"/{props['org'].lower()}/{props['app'].lower()}/{props['environment']}/cloudwatch_config",
+            },
+        }
+    )
+
+def test_app_security_group_created(template):
+    template.has_resource(
+        "AWS::EC2::SecurityGroup",
+        {
+            "Properties": {
+                "GroupName": f"{props['app'].lower()}-Security-Group",
+                "SecurityGroupEgress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Allow all outbound traffic by default",
+                        "IpProtocol": "-1"
+                    }
+                ],
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Allow HTTP From World",
+                        "FromPort": 80,
+                        "IpProtocol": "tcp",
+                        "ToPort": 80
+                    }
+                ]
+            },
+        }
+    )
+
+def test_app_instance_created(template):
+    template.has_resource(
+        "AWS::EC2::Instance",
+        {
+            "Properties": {
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": "30",
+                            "VolumeType": "gp2",
+                            "DeleteOnTermination": "true"
+                        }
+                    }
+                ],
+                "InstanceType": props["instance_type"]
+            },
         }
     )
